@@ -20,7 +20,7 @@ function handle_rotate {
   value=$(echo $input | sed 's/.*value\ \(\d*\)/\1/g')
   echo "ROTATE: $value"
 
-  safe_exec "rotate_action $value"
+  safe_exec "rotate_action" "$value"
 }
 
 function handle_press {
@@ -37,7 +37,7 @@ function handle_release {
 
 function safe_exec {
   fn=$1
-  args="$2"
+  args=$2
   function_exists $fn && $fn $args || echo "'$fn' is not implemented"
 }
 
