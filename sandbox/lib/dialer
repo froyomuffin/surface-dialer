@@ -41,6 +41,8 @@ function handle_release {
   safe_exec 'release_action'
 }
 
+# Some helpers
+
 function safe_exec {
   fn=$1
   args=$2
@@ -49,4 +51,8 @@ function safe_exec {
 
 function function_exists {
   declare -F "$1" > /dev/null
+}
+
+function time_ms_now {
+  date +%s%N | cut -b1-13
 }
