@@ -1,0 +1,8 @@
+#!/bin/bash
+
+source 'lib/dialer'
+
+device='/dev/input/event0'
+
+echo "Starting"
+listen $device
