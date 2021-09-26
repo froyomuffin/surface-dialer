@@ -19,12 +19,27 @@ function handle_rotate {
   input=$1
   value=$(echo $input | sed 's/.*value\ \(\d*\)/\1/g')
   echo "ROTATE: $value"
+
+  safe_exec 'rotate_action'
 }
 
 function handle_press {
   echo "PRESSED"
+
+  safe_exec 'press_action'
 }
 
 function handle_release {
   echo "RELEASED"
+
+  safe_exec 'release_action'
+}
+
+function safe_exec {
+  fn=$1
+  function_exists $fn && $fn || echo "'$fn' is not implemented"
+}
+
+function function_exists {
+  declare -F "$1" > /dev/null
 }
