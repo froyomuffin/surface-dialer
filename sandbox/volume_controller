@@ -1,0 +1,54 @@
+#!/bin/bash
+
+source 'lib/dialer'
+
+device='/dev/input/event0'
+
+function rotate_action {
+  value="$1"
+
+  blackhole_for_throttle && echo "Throttled" && return
+  blackhole_for_threshold $value && echo "Threshold not met" && return
+
+  volume_value=$(format_to_volume_value "$value")
+
+  adjust_volume "$volume_value"
+}
+
+function blackhole_for_threshold {
+  threshold=1
+
+  value="$1"
+  abs_value=$(echo "$value" | sed 's/[+-]//g')
+
+  echo $value
+  echo $abs_value
+
+  [ $abs_value -lt $threshold ]
+}
+
+time_last=$(time_ms_now)
+function blackhole_for_throttle {
+  throttle_ms=300
+
+  time_now=$(time_ms_now)
+  time_diff=$(expr $time_now - $time_last)
+  time_last=$time_now
+
+  [ $time_diff -lt $throttle_ms ]
+}
+
+function adjust_volume {
+  amount="$1"
+
+  ddcutil setvcp 62 $amount
+}
+
+function format_to_volume_value {
+  input="$1"
+
+  echo "$input" | sed 's/.*\([+-]\)\(.*\)/\1 \2/g'
+}
+
+echo "Starting volume controller"
+listen $device
