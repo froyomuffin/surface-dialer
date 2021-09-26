@@ -1,0 +1,36 @@
+#!/bin/bash
+
+device='/dev/input/event0'
+
+event_rotate='*code 7 (REL_DIAL), value*'
+event_press='*code 256 (BTN_0), value 1*'
+event_release='*code 256 (BTN_0), value 0*'
+
+function handle_rotate {
+  input=$1
+  value=$(echo $input | sed 's/.*value\ \(\d*\)/\1/g')
+  echo "ROTATE: $value"
+}
+
+function handle_press {
+  echo "PRESSED"
+}
+
+function handle_release {
+  echo "RELEASED"
+}
+
+function listen {
+  device=$1
+  evtest "$device" | while read line; do
+    case $line in
+      ($event_rotate) handle_rotate "$line" ;;
+      ($event_press) handle_press ;;
+      ($event_release) handle_release ;;
+    esac
+  done
+}
+
+echo "Starting"
+
+listen "$device"
