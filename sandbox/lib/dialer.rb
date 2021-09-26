@@ -16,6 +16,14 @@ class Dialer
   end
 
   def run
+    loop do
+      raw_run
+    end
+  end
+
+  private
+
+  def raw_run
     command = "evtest #{@device}"
     IO.popen(command) do |io|
       while (line = io.gets) do
@@ -32,10 +40,9 @@ class Dialer
     end
   end
 
-  private
-
   def rotate_handler
     value = /.*value.*?(-?\d+)/.match(@line).captures.first
+    value = value.to_i
 
     @rotate_handler.call(value) unless @rotate_handler.nil?
   end
