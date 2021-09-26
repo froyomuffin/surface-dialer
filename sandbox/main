@@ -5,7 +5,8 @@ source 'lib/dialer'
 device='/dev/input/event0'
 
 function rotate_action {
-  echo "YAY"
+  value="$1"
+  echo "Rotate received: $value"
 }
 
 echo "Starting"
