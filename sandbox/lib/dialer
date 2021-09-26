@@ -16,8 +16,14 @@ function listen {
 }
 
 function handle_rotate {
-  input=$1
-  value=$(echo $input | sed 's/.*value\ \(\d*\)/\1/g')
+  raw_value=$1
+  value=$(echo $raw_value | sed 's/.*value\ \(\d*\)/\1/g')
+
+  if [ $value -gt 0 ]
+  then
+    value="+$value"
+  fi
+
   echo "ROTATE: $value"
 
   safe_exec "rotate_action" "$value"
