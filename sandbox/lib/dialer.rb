@@ -5,17 +5,28 @@ class Dialer
   EVENT_PRESS_PATTERN = /.*code 256 \(BTN_0\), value 1.*/
   EVENT_RELEASE_PATTERN = /.*code 256 \(BTN_0\), value 0.*/
 
+  def initialize(
+    rotate_handler: nil,
+    press_handler: nil,
+    release_handler: nil
+  )
+    @rotate_handler = rotate_handler
+    @press_handler = press_handler
+    @release_handler = release_handler
+  end
+
   def run
     command = "evtest #{DEVICE}"
     IO.popen(command) do |io|
       while (line = io.gets) do
-        case line
+        @line = line
+        case @line
         when EVENT_ROTATE_PATTERN
-          rotate_handler(line)
+          rotate_handler
         when EVENT_PRESS_PATTERN
-          press_handler(line)
+          press_handler
         when EVENT_RELEASE_PATTERN
-          release_handler(line)
+          release_handler
         end
       end
     end
@@ -23,18 +34,28 @@ class Dialer
 
   private
 
-  def rotate_handler(line)
-    value = /.*(\d)/.match(line).captures.first
+  def rotate_handler
+    value = /.*value.*?(-?\d+)/.match(@line).captures.first
     puts "ROTATE: #{value}"
+
+    @rotate_handler.call(value) unless @rotate_handler.nil?
   end
 
-  def press_handler(line)
+  def press_handler
     puts "PRESSED"
+
+    @press_handler.call unless @press_handler.nil?
   end
 
-  def release_handler(line)
+  def release_handler
     puts "RELEASED"
+
+    @release_handler.call unless @release_handler.nil?
   end
 end
 
-Dialer.new.run
+rotate_handler = ->(value) do
+  puts "Received: #{value}"
+end
+
+Dialer.new(rotate_handler: rotate_handler).run
