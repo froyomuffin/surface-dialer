@@ -7,24 +7,47 @@ device='/dev/input/event0'
 function rotate_action {
   value="$1"
 
-  blackhole_for_throttle && echo "Throttled" && return
-  blackhole_for_threshold $value && echo "Threshold not met" && return
+  #blackhole_for_throttle && return
+  blackhole_for_threshold $value && return
+  accumulate_value $value && echo "Accumlating" && return
 
-  volume_value=$(format_to_volume_value "$value")
+  volume_value=$(format_to_volume_value)
 
-  adjust_volume "$volume_value"
+  #adjust_volume "$volume_value"
 }
 
-function blackhole_for_threshold {
-  threshold=1
+accumulated_value=0
+sample_start=$(time_ms_now)
+function accumulate_value {
+  sample_window_ms=200
 
   value="$1"
-  abs_value=$(echo "$value" | sed 's/[+-]//g')
 
-  echo $value
-  echo $abs_value
+  time_now=$(time_ms_now)
 
-  [ $abs_value -lt $threshold ]
+  sample_window_so_far=$(expr $time_now - $sample_start)
+
+  accumulated_value=$(expr $accumulated_value + $value)
+
+  if [ $sample_window_so_far -gt $sample_window_ms ]
+  then
+    return 1
+  fi
+
+  return 0
+}
+
+function format_to_volume_value {
+  input="$accumulated_value"
+
+  if [ $input -gt 0 ]
+  then
+    input="$input"
+  fi
+
+  accumulated_value=0
+
+  echo "$input" | sed 's/.*\([+-]\)\(.*\)/\1 \2/g'
 }
 
 time_last=$(time_ms_now)
@@ -38,16 +61,19 @@ function blackhole_for_throttle {
   [ $time_diff -lt $throttle_ms ]
 }
 
+function blackhole_for_threshold {
+  threshold=5
+
+  value="$1"
+  abs_value=$(echo "$value" | sed 's/[+-]//g')
+
+  [ $abs_value -lt $threshold ]
+}
+
 function adjust_volume {
   amount="$1"
 
   ddcutil setvcp 62 $amount
-}
-
-function format_to_volume_value {
-  input="$1"
-
-  echo "$input" | sed 's/.*\([+-]\)\(.*\)/\1 \2/g'
 }
 
 echo "Starting volume controller"

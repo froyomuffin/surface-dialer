@@ -19,25 +19,14 @@ function handle_rotate {
   raw_value=$1
   value=$(echo $raw_value | sed 's/.*value\ \(\d*\)/\1/g')
 
-  if [ $value -gt 0 ]
-  then
-    value="+$value"
-  fi
-
-  echo "ROTATE: $value"
-
   safe_exec "rotate_action" "$value"
 }
 
 function handle_press {
-  echo "PRESSED"
-
   safe_exec 'press_action'
 }
 
 function handle_release {
-  echo "RELEASED"
-
   safe_exec 'release_action'
 }
 
