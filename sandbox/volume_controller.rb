@@ -66,7 +66,7 @@ end
 
 class BufferedMonitor
   def initialize
-    @buffer_period = 20
+    @buffer_period = 10
     @buffer = ValueBuffer.new
 
     Thread.new do
@@ -111,7 +111,7 @@ class BufferedMonitor
     command = 'ddcutil getvcp 8D'
     result = `#{command}`
 
-    mute_code = /.*sl=(.*)\)/.match(result).captures.first
+    mute_code = /.*sl=(.*)\)/.match(result).captures&.first
 
     case mute_code
     when '0x02'
