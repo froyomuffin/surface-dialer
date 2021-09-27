@@ -28,20 +28,18 @@ end
 class Adjustment
   def initialize(value)
     @value = value
-    @normalized_value = @value
+    @normalized_value =
       case
-      when @value.abs <= 10
+      when @value.abs <= 3
         0
-      when @value.abs <= 40
+      when @value.abs <= 300
         if @value > 0
           1
         else
           -1
         end
-      when @value.abs <= 40
-        @value / 10
       else
-        @value / 40
+        @value / 20
       end
     puts "#{@value} => #{@normalized_value}" if @value != 0
   end
@@ -54,10 +52,8 @@ class Adjustment
     adjustment_str =
       if @normalized_value < 0
         "- #{@normalized_value.abs}"
-        "- 1"
       else
         "+ #{@normalized_value}"
-        "+ 1"
       end
 
     "ddcutil setvcp 62 #{adjustment_str}"
