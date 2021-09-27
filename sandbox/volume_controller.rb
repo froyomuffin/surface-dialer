@@ -82,6 +82,19 @@ class BufferedMonitor
     @buffer.push(value)
   end
 
+  def toggle_mute
+    code =
+      if muted?
+        '0x02'
+      else
+        '0x01'
+      end
+
+    command = "ddcutil setvcp 8D #{code}"
+
+    system(command)
+  end
+
   private
 
   def _adjust_volume_by(value)
@@ -92,6 +105,20 @@ class BufferedMonitor
 
     puts command
     system(command)
+  end
+
+  def muted?
+    command = 'ddcutil getvcp 8D'
+    result = `#{command}`
+
+    mute_code = /.*sl=(.*)\)/.match(result).captures.first
+
+    case mute_code
+    when '0x02'
+      false
+    when '0x01'
+      true
+    end
   end
 end
 
@@ -105,7 +132,15 @@ class VolumeController
       @monitor.adjust_volume_by(value)
     end
 
-    Dialer.new(device: DEVICE, rotate_handler: volume_handler).run
+    mute_handler = ->() do
+      @monitor.toggle_mute
+    end
+
+    Dialer.new(
+      device: DEVICE,
+      rotate_handler: volume_handler,
+      press_handler: mute_handler,
+    ).run
   end
 
 end
