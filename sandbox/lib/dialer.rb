@@ -2,6 +2,7 @@ class Dialer
   EVENT_ROTATE_PATTERN = /.*code 7 \(REL_DIAL\), value.*/
   EVENT_PRESS_PATTERN = /.*code 256 \(BTN_0\), value 1.*/
   EVENT_RELEASE_PATTERN = /.*code 256 \(BTN_0\), value 0.*/
+  NOT_READY_PATTERN = /.*evtest: No such file or directory*/
 
   def initialize(
     device:,
@@ -16,25 +17,21 @@ class Dialer
   end
 
   def run
-    loop do
-      raw_run
-    end
-  end
-
-  private
-
-  def raw_run
     command = "evtest #{@device}"
-    IO.popen(command) do |io|
-      while (line = io.gets) do
-        @line = line
-        case @line
-        when EVENT_ROTATE_PATTERN
-          rotate_handler
-        when EVENT_PRESS_PATTERN
-          press_handler
-        when EVENT_RELEASE_PATTERN
-          release_handler
+    loop do
+      IO.popen(command, :err=>[:child, :out]) do |io|
+        while (line = io.gets) do
+          @line = line
+          case @line
+          when EVENT_ROTATE_PATTERN
+            rotate_handler
+          when EVENT_PRESS_PATTERN
+            press_handler
+          when EVENT_RELEASE_PATTERN
+            release_handler
+          when NOT_READY_PATTERN
+            not_ready_handler
+          end
         end
       end
     end
@@ -53,5 +50,10 @@ class Dialer
 
   def release_handler
     @release_handler.call unless @release_handler.nil?
+  end
+
+  def not_ready_handler
+    puts "Device not ready"
+    sleep 0.2
   end
 end
