@@ -107,7 +107,7 @@ class BufferedMonitor
     command = 'ddcutil getvcp 8D'
     result = `#{command}`
 
-    mute_code = /.*sl=(.*)\)/.match(result).captures&.first
+    mute_code = /.*sl=(.*)\)/.match(result)&.captures&.first
 
     case mute_code
     when '0x02'
@@ -138,7 +138,6 @@ class VolumeController
       press_handler: mute_handler,
     ).run
   end
-
 end
 
 VolumeController.new.run

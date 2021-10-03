@@ -53,7 +53,13 @@ class Dialer
   end
 
   def not_ready_handler
-    puts "Device not ready"
+    log "Device not ready"
     sleep 0.2
+  end
+
+  def log(message)
+    time = Time.now
+
+    puts "[#{time}] #{message}"
   end
 end
